@@ -4,11 +4,9 @@
     <div id="bg-plate">
       <button id="add-btn" @click="addEvent">ADD</button>
       <div id="swiper">
-        <el-carousel :autoplay="false">
-          <transition-group
-            v-for="(Item, Index) in showList"
-            :key="Index"
-            class="el-carousel__item"
+        <el-carousel :autoplay="false" >
+          <el-carousel-item v-for="(Item, Index) in showList" :key="Index">
+            <transition-group
             tag="div"
             name="transitionPage"
           >
@@ -39,6 +37,7 @@
               />
             </div>
           </transition-group>
+          </el-carousel-item>
         </el-carousel>
       </div>
     </div>
@@ -287,9 +286,9 @@
 </style>
 <script>
 import { mapMutations, mapState, mapGetters } from "vuex";
+import { nanoid } from 'nanoid';
 import { checkTime, pieceTime } from "../../Function/checkTime";
 import { findRelIndex } from "../../Function/findRelIndex";
-import { findMaxID } from "../../Function/findMaxID";
 import Menu from "./Menu.vue";
 export default {
   data() {
@@ -300,7 +299,6 @@ export default {
       year: "",
       month: "",
       day: "",
-      MaxID: 0, //根据最大id为每个对象添加id
       updataed: true, //展示save按键还是updata按键（在弹窗中）
       showList: null, //showList是展示标签的对象数组，按照菜单模式决定是sortList还是list
       forbidden: true, //forbidden是true代表进入的是add，如果进入detail(详情)，那么修改forbidden为false
@@ -360,7 +358,7 @@ export default {
         submitObj.event = this.textarea2.content.trim();
         submitObj.time = deadline;
         submitObj.done = false;
-        submitObj.id = ++this.MaxID;
+        submitObj.id = nanoid();//第三方库nanoid生成唯一的id
         //console.log(submitObj);
         this.updataList([submitObj, option]);
         if (this.forbidden) {
@@ -532,8 +530,6 @@ export default {
       option: "assign",
       count: count,
     });
-    this.MaxID = findMaxID(this.list);
-    console.log(this.MaxID);
     this.showList = this.list;
   },
   watch: {
