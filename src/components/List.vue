@@ -4,39 +4,36 @@
     <div id="bg-plate">
       <button id="add-btn" @click="addEvent">ADD</button>
       <div id="swiper">
-        <el-carousel :autoplay="false" >
+        <el-carousel :autoplay="false">
           <el-carousel-item v-for="(Item, Index) in showList" :key="Index">
-            <transition-group
-            tag="div"
-            name="transitionPage"
-          >
-            <div
-              class="tip"
-              v-for="(item, index) in Item"
-              :key="item.id"
-              draggable="true"
-              @dragstart="dragStart($event, index)"
-              @dragover="allowDrop"
-              @drop="drop($event, Index, index)"
-            >
-              <div class="tip-needle"></div>
-              <span class="tip-event">{{ item.event }}</span>
-              <span class="tip-time"
-                >截至:{{ item.time.slice(0, 4) }}:{{ item.time.slice(5, 7) }}:{{
-                  item.time.slice(8, 10)
-                }}</span
+            <transition-group tag="div" name="transitionPage">
+              <div
+                class="tip"
+                v-for="(item, index) in Item"
+                :key="item.id"
+                draggable="true"
+                @dragstart="dragStart($event, index)"
+                @dragover="allowDrop"
+                @drop="drop($event, Index, index)"
               >
-              <a href="javascript:;" @click="detail(Index, index)">详情</a>
-              <a href="javascript:;" @click="cut(Index, index)">删除</a>
-              <el-switch
-                v-model="item.done"
-                size="small"
-                active-text="已完成"
-                inactive-text="未完成"
-                @click="hasdone(Index, index, item.done)"
-              />
-            </div>
-          </transition-group>
+                <div class="tip-needle"></div>
+                <span class="tip-event">{{ item.event }}</span>
+                <span class="tip-time"
+                  >截至:{{ item.time.slice(0, 4) }}:{{
+                    item.time.slice(5, 7)
+                  }}:{{ item.time.slice(8, 10) }}</span
+                >
+                <a href="javascript:;" @click="detail(Index, index)">详情</a>
+                <a href="javascript:;" @click="cut(Index, index)">删除</a>
+                <el-switch
+                  v-model="item.done"
+                  size="small"
+                  active-text="已完成"
+                  inactive-text="未完成"
+                  @click="hasdone(Index, index, item.done)"
+                />
+              </div>
+            </transition-group>
           </el-carousel-item>
         </el-carousel>
       </div>
@@ -48,19 +45,21 @@
         <h3>EVENT</h3>
         <div id="textarea-plate">
           <el-input
+            id="el-text"
             v-model="textarea2.content"
             type="textarea"
             :autosize="{ minRows: 3, maxRows: 5 }"
             placeholder="Please input event"
+            @keyup="downTimeInput"
           />
         </div>
         <h3>DEADLINE</h3>
         <div id="time-input">
-          <input type="text" v-model="year" />
+          <input type="text" v-model="year" @keyup="changeFocus($event, 0)" />
           <span>年</span>
-          <input type="text" v-model="month" />
+          <input type="text" v-model="month" @keyup="changeFocus($event, 1)" />
           <span>月</span>
-          <input type="text" v-model="day" />
+          <input type="text" v-model="day" @keyup="changeFocus($event, 2)" />
           <span>日</span>
         </div>
         <button id="save-btn" @click="saveEvent('first')" v-if="updataed">
@@ -286,7 +285,7 @@
 </style>
 <script>
 import { mapMutations, mapState, mapGetters } from "vuex";
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 import { checkTime, pieceTime } from "../../Function/checkTime";
 import { findRelIndex } from "../../Function/findRelIndex";
 import Menu from "./Menu.vue";
@@ -358,7 +357,7 @@ export default {
         submitObj.event = this.textarea2.content.trim();
         submitObj.time = deadline;
         submitObj.done = false;
-        submitObj.id = nanoid();//第三方库nanoid生成唯一的id
+        submitObj.id = nanoid(); //第三方库nanoid生成唯一的id
         //console.log(submitObj);
         this.updataList([submitObj, option]);
         if (this.forbidden) {
@@ -432,8 +431,7 @@ export default {
           item: index,
         });
         this.showList = this.sortList;
-      }
-      else{
+      } else {
         return alert("只读模式，删除功能已禁用！");
       }
       this.updataCount({ option: "delete", data: 0 });
@@ -482,6 +480,33 @@ export default {
         return alert("若需拖拽，请选择相应模式！");
       }
     },
+    changeFocus(e, index) {
+      //点击左右方向键改变聚焦的输入框
+      let inputs = document
+        .getElementById("time-input")
+        .querySelectorAll("input");
+      if (e.key === "ArrowRight") {
+        index = (index + 1) % 3;
+        inputs[index].focus();
+      } else if (e.key === "ArrowLeft") {
+        index = (index - 1) % 3;
+        inputs[index].focus();
+      }
+      if(e.key==="ArrowUp"&&index===0){
+        let text=document.getElementById('el-text');
+        text.focus();
+      }
+      if(index===2&&e.key==='Enter'){
+        let save=document.getElementById('save-btn');
+        save.click();
+      }
+    },
+    downTimeInput(e){
+      if(e.key==="ArrowDown"){
+        let input=document.getElementById("time-input").querySelectorAll('input')[0];
+        input.focus();
+      }
+    },
     ...mapMutations([
       "updataCount",
       "updataList",
@@ -491,7 +516,7 @@ export default {
     ]),
   },
   computed: {
-    ...mapState(["list", "count", "mode","passMode"]),
+    ...mapState(["list", "count", "mode", "passMode"]),
     ...mapGetters(["sortList", "doneList", "doingList"]),
   },
   mounted() {
