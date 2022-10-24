@@ -8,7 +8,7 @@
           <el-carousel-item v-for="(Item, Index) in showList" :key="Index">
             <transition-group tag="div" name="transitionPage">
               <div
-                class="tip"
+                class="tip-wrap"
                 v-for="(item, index) in Item"
                 :key="item.id"
                 draggable="true"
@@ -16,22 +16,24 @@
                 @dragover="allowDrop"
                 @drop="drop($event, Index, index)"
               >
-                <div class="tip-needle"></div>
-                <span class="tip-event">{{ item.event }}</span>
-                <span class="tip-time"
-                  >截至:{{ item.time.slice(0, 4) }}:{{
-                    item.time.slice(5, 7)
-                  }}:{{ item.time.slice(8, 10) }}</span
-                >
-                <a href="javascript:;" @click="detail(Index, index)">详情</a>
-                <a href="javascript:;" @click="cut(Index, index)">删除</a>
-                <el-switch
-                  v-model="item.done"
-                  size="small"
-                  active-text="已完成"
-                  inactive-text="未完成"
-                  @click="hasdone(Index, index, item.done)"
-                />
+                <div class="tip">
+                  <div class="tip-needle"></div>
+                  <span class="tip-event">{{ item.event }}</span>
+                  <span class="tip-time"
+                    >截至:{{ item.time.slice(0, 4) }}:{{
+                      item.time.slice(5, 7)
+                    }}:{{ item.time.slice(8, 10) }}</span
+                  >
+                  <a href="javascript:;" @click="detail(Index, index)">详情</a>
+                  <a href="javascript:;" @click="cut(Index, index)">删除</a>
+                  <el-switch
+                    v-model="item.done"
+                    size="small"
+                    active-text="已完成"
+                    inactive-text="未完成"
+                    @click="hasdone(Index, index, item.done)"
+                  />
+                </div>
               </div>
             </transition-group>
           </el-carousel-item>
@@ -109,8 +111,18 @@
       line-height: 40px;
       color: white;
     }
-    .transitionPage-move {
+    .transitionPage-move,
+    .transitionPage-enter-active,
+    .transitionPage-leave-active {
       transition: all 0.8s ease;
+    }
+    .transitionPage-enter-from,
+    .transitionPage-leave-to {
+      opacity: 0;
+      transform: translateX(70px);
+    }
+    .transitionPage-leave-active {
+      position: absolute;
     }
     #swiper {
       width: 400px;
@@ -131,18 +143,20 @@
         flex-direction: column;
         align-items: center;
         justify-content: start;
+        .tip-wrap{
+          margin-top: 20px;
+          margin-bottom: 20px;
+        }
         .tip {
           width: 350px;
           height: 120px;
           border-radius: 15px;
           display: flex;
           justify-content: space-around;
+          position: relative; //这里的问题，在tip外卖呢再套一层盒子，外层盒子不加position实现过度，内层tip加position实现定位，然后删去position属性就可以实现删除添加便签的过渡效果
           align-items: center;
           background-color: antiquewhite;
-          position: relative;
           user-select: none;
-          margin-top: 20px;
-          margin-bottom: 20px;
           .tip-needle {
             position: absolute;
             width: 20px;
@@ -492,18 +506,20 @@ export default {
         index = (index - 1) % 3;
         inputs[index].focus();
       }
-      if(e.key==="ArrowUp"&&index===0){
-        let text=document.getElementById('el-text');
+      if (e.key === "ArrowUp" && index === 0) {
+        let text = document.getElementById("el-text");
         text.focus();
       }
-      if(index===2&&e.key==='Enter'){
-        let save=document.getElementById('save-btn');
+      if (index === 2 && e.key === "Enter") {
+        let save = document.getElementById("save-btn");
         save.click();
       }
     },
-    downTimeInput(e){
-      if(e.key==="ArrowDown"){
-        let input=document.getElementById("time-input").querySelectorAll('input')[0];
+    downTimeInput(e) {
+      if (e.key === "ArrowDown") {
+        let input = document
+          .getElementById("time-input")
+          .querySelectorAll("input")[0];
         input.focus();
       }
     },
